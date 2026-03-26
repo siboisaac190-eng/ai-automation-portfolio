@@ -1,38 +1,73 @@
 # AI Automation Portfolio — Sibomana Isaac
 
-Production-ready Node.js automation examples. Each folder is a standalone, deployable module.
+Production-ready Node.js automation. Built for real systems, not demos.
 
-## Projects
+Every module here runs inside **Nuri** — my autonomous AI Business OS that operates 24/7 on a MacBook Air M1, scanning for freelance work, tracking revenue, fixing its own bugs, and briefing me every morning on Telegram.
 
-### 1. `telegram-bot/` — AI-Powered Telegram Bot
-Command routing + Gemini AI responses + inline keyboards. Drop-in for any business bot.
+---
 
-### 2. `shopify-webhook/` — Shopify Order Notifications
-Receives Shopify webhooks, verifies HMAC signatures, sends formatted Telegram alerts.
+## Modules
 
-### 3. `ai-agent/` — Autonomous AI Agent
-Goal-driven agent that plans tasks, executes them, and reports results. Powered by Gemini.
+### Core Bot Infrastructure
+| Module | What it does |
+|---|---|
+| [`telegram-bot/`](./telegram-bot/) | AI-powered Telegram bot — commands + Gemini natural language |
+| [`shopify-webhook/`](./shopify-webhook/) | Shopify order events → verified HMAC → Telegram notifications |
 
-### 4. `goal-tracker/` — Revenue Goal Engine
-Tracks income across multiple streams, fires milestone alerts, rebalances targets mid-month.
+### Multi-Agent Systems (the interesting stuff)
+| Module | What it does |
+|---|---|
+| [`blackboard-memory/`](./blackboard-memory/) | Shared memory bus — 6 agents post findings, any agent reads them |
+| [`email-bridge/`](./email-bridge/) | Two AIs talk via Gmail: Nuri reports bugs → Claude Code fixes → replies |
+| [`revenue-engine/`](./revenue-engine/) | Tracks $8,333/month goal, fires milestone alerts, rebalances mid-month |
+
+### Utilities
+| Module | What it does |
+|---|---|
+| [`ai-agent/`](./ai-agent/) | Goal-driven agent: plan → execute → reflect |
+| [`goal-tracker/`](./goal-tracker/) | CLI revenue tracker with progress bars |
+
+---
+
+## Architecture: How These Fit Together
+
+```
+                    ISAAC (Telegram)
+                         │
+                         ▼
+                    NURI (always on)
+                    ┌────────────────┐
+                    │ telegram-bot   │ ← commands from Isaac
+                    │ shopify-webhook│ ← orders from Shopify
+                    │ revenue-engine │ ← tracks income 24/7
+                    │ blackboard     │ ← agents share findings
+                    │ email-bridge   │ ← talks to Claude Code
+                    └────────────────┘
+                         │
+              bug/task via Gmail ([NURI])
+                         │
+                         ▼
+                   CLAUDE CODE
+              reads → fixes → replies ([CLAUDE])
+                         │
+                    Nuri picks up reply
+                         │
+                         ▼
+              "Bug fixed automatically" (Telegram)
+```
 
 ---
 
 ## Tech Stack
 
-- **Runtime:** Node.js 22 (zero npm dependencies in core modules)
-- **AI:** Google Gemini 3.1 Pro / 2.5 Flash
-- **APIs:** Telegram Bot API, Shopify Admin API, Gmail SMTP/IMAP
-- **Protocols:** HTTPS, WebSocket, TLS
+- **Runtime:** Node.js 22
+- **AI:** Gemini 3.1 Pro / 2.5 Flash
+- **Zero npm** in core modules — Node.js built-ins only (`tls`, `https`, `fs`, `crypto`, `http`)
+- **Protocols:** SMTP port 465 · IMAP port 993 · HTTPS · WebSocket
 
 ---
 
 ## Hire Me
 
-Available on Upwork for:
-- Telegram bots (AI + commands + integrations)
-- Shopify automation (webhooks, order tracking, notifications)
-- AI agents and workflow automation
-- Any Node.js API integration
-
-Response time: under 4 hours.
+Available on Upwork for Node.js automation, AI agents, Telegram bots, Shopify integrations.
+**github.com/siboisaac190-eng** · Response under 4 hours.
