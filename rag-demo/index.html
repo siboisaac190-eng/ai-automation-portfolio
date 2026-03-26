@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Business Assistant — RAG Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f0f13;
+      color: #e8e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #4f8ef7, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: #888;
+      font-size: 0.95rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 0.78rem;
+      color: #7c9ef0;
+      margin-top: 12px;
+    }
+
+    .badge .dot {
+      width: 7px; height: 7px;
+      background: #4ade80;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .demo-box {
+      width: 100%;
+      max-width: 760px;
+      background: #16161f;
+      border: 1px solid #2a2a3a;
+      border-radius: 16px;
+      padding: 32px;
+    }
+
+    .question-label {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: #0f0f18;
+      border: 1px solid #2a2a4a;
+      border-radius: 10px;
+      padding: 14px 18px;
+      color: #e8e8f0;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: #4f8ef7;
+    }
+
+    input[type="text"]::placeholder { color: #444; }
+
+    button {
+      background: linear-gradient(135deg, #4f8ef7, #a855f7);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    button:hover { opacity: 0.9; }
+    button:active { transform: scale(0.98); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+
+    .suggestion {
+      background: #1e1e2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 0.82rem;
+      color: #9090b0;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .suggestion:hover {
+      border-color: #4f8ef7;
+      color: #c0c8f8;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #2a2a3a;
+      margin-bottom: 24px;
+    }
+
+    .answer-section { display: none; }
+    .answer-section.visible { display: block; }
+
+    .thinking {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      color: #888;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+
+    .thinking.visible { display: flex; }
+
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid #2a2a4a;
+      border-top-color: #4f8ef7;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .answer-label {
+      font-size: 0.8rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .answer-text {
+      background: #0f0f18;
+      border: 1px solid #2a2a3a;
+      border-left: 3px solid #4f8ef7;
+      border-radius: 0 10px 10px 0;
+      padding: 20px;
+      line-height: 1.7;
+      font-size: 0.97rem;
+      color: #d8d8f0;
+      white-space: pre-wrap;
+      margin-bottom: 20px;
+    }
+
+    .sources {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .source-label {
+      font-size: 0.78rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .source-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #1a2040;
+      border: 1px solid #2a3a6a;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      color: #7c9ef0;
+      width: fit-content;
+    }
+
+    .source-chip::before {
+      content: '📄';
+      font-size: 0.75rem;
+    }
+
+    .error-text {
+      background: #1f0f0f;
+      border: 1px solid #4a1a1a;
+      border-left: 3px solid #f74f4f;
+      border-radius: 0 10px 10px 0;
+      padding: 16px 20px;
+      color: #f08080;
+      font-size: 0.9rem;
+    }
+
+    .powered-by {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 0.78rem;
+      color: #555;
+    }
+
+    .powered-by span {
+      color: #7c9ef0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>AI Business Assistant</h1>
+    <p>Ask anything about AI automation, pricing, or how it works</p>
+    <div class="badge">
+      <span class="dot"></span>
+      Live RAG Demo — Vertex AI + Gemini
+    </div>
+  </div>
+
+  <div class="demo-box">
+    <div class="question-label">Your Question</div>
+    <div class="input-row">
+      <input type="text" id="question" placeholder="e.g. How much does AI automation cost?" />
+      <button id="askBtn" onclick="ask()">Ask AI</button>
+    </div>
+
+    <div class="suggestions">
+      <span class="suggestion" onclick="fill(this)">What is RAG?</span>
+      <span class="suggestion" onclick="fill(this)">How much does it cost?</span>
+      <span class="suggestion" onclick="fill(this)">Show me a real case study</span>
+      <span class="suggestion" onclick="fill(this)">How long to get ROI?</span>
+      <span class="suggestion" onclick="fill(this)">What businesses benefit most?</span>
+      <span class="suggestion" onclick="fill(this)">How does the Starter package work?</span>
+    </div>
+
+    <hr class="divider">
+
+    <div class="thinking" id="thinking">
+      <div class="spinner"></div>
+      Searching knowledge base and generating answer...
+    </div>
+
+    <div class="answer-section" id="answerSection">
+      <div class="answer-label">AI Answer</div>
+      <div class="answer-text" id="answerText"></div>
+      <div class="sources" id="sourcesDiv"></div>
+    </div>
+  </div>
+
+  <div class="powered-by">
+    Powered by <span>Gemini 3.1 Pro</span> + <span>Vertex AI Agent Builder</span> &mdash; Built by Sibomana Isaac
+  </div>
+
+  <script>
+    const input = document.getElementById('question');
+    const btn   = document.getElementById('askBtn');
+
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') ask(); });
+
+    function fill(el) {
+      input.value = el.textContent;
+      input.focus();
+    }
+
+    async function ask() {
+      const question = input.value.trim();
+      if (!question) return;
+
+      // Show thinking
+      btn.disabled = true;
+      document.getElementById('thinking').classList.add('visible');
+      document.getElementById('answerSection').classList.remove('visible');
+
+      try {
+        const res = await fetch('/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question }),
+        });
+
+        const data = await res.json();
+
+        document.getElementById('thinking').classList.remove('visible');
+        document.getElementById('answerSection').classList.add('visible');
+
+        if (data.error) {
+          document.getElementById('answerText').outerHTML =
+            `<div class="error-text" id="answerText">Error: ${data.error}</div>`;
+        } else {
+          document.getElementById('answerText').textContent = data.answer;
+
+          const sourcesDiv = document.getElementById('sourcesDiv');
+          if (data.sources && data.sources.length) {
+            sourcesDiv.innerHTML = `<div class="source-label">Sources</div>` +
+              data.sources.map(s =>
+                `<div class="source-chip">${s.title}</div>`
+              ).join('');
+          } else {
+            sourcesDiv.innerHTML = '';
+          }
+        }
+      } catch (e) {
+        document.getElementById('thinking').classList.remove('visible');
+        document.getElementById('answerSection').classList.add('visible');
+        document.getElementById('answerText').textContent = 'Connection error. Is the server running?';
+      }
+
+      btn.disabled = false;
+    }
+  </script>
+
+</body>
+</html>
